@@ -4,7 +4,7 @@
 #define SCREEN_W 640
 #define SCREEN_H 480
 
-int is_running = 1;
+int quit = 0;
 
 int main(){
     SDL_Init(SDL_INIT_VIDEO);
@@ -15,18 +15,16 @@ int main(){
 	    "The Rippler", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 	    SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN
     );
-    SDL_Surface* pSurface = SDL_GetWindowSurface(pWindow);
     SDL_Renderer* pRenderer = SDL_CreateRenderer(pWindow, -1,0);
 
     /* Configure renderer (background) */
-    SDL_SetRenderDrawColor(pRenderer, 255,0,0,255);
+    SDL_SetRenderDrawColor(pRenderer, 51,51,51,255);
     SDL_RenderClear(pRenderer);   // clear screen to target color
     SDL_RenderPresent(pRenderer); // show target color 
 
     /* _________________________________________________________________ */
     
-    while(is_running){
-	SDL_UpdateWindowSurface(pWindow);
+    while(!quit){
 
 	/* detect keypress */
 	while(SDL_PollEvent(&event)){
@@ -36,7 +34,7 @@ int main(){
 		    /* check which key is pressed */
 		    switch(event.key.keysym.sym){
 			case SDLK_q:
-			    is_running = 0; // quit program on 'q'
+			    quit = 1;
 			    break;
 		    }
 	    }
