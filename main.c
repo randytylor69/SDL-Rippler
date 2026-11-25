@@ -5,6 +5,8 @@
 #define SCREEN_H 480
 
 int quit = 0;
+int travelling = 0; // is the ball travelling between 2 mouse clicks?
+
 
 void draw_filled_circle(SDL_Renderer *renderer, int32_t centre_x, int32_t centre_y, int32_t r){
     
@@ -30,6 +32,17 @@ void draw_filled_circle(SDL_Renderer *renderer, int32_t centre_x, int32_t centre
     
 }
 
+void update_centres(int *mouseX, int *mouseY, int new_mouseX, int new_mouseY, int *circle_size, int d){
+    /* d is the distance between each small updates */
+    if (*mouseX != new_mouseX || *mouseY != new_mouseY){
+	if (*mouseX > new_mouseX) *mouseX -= d;
+	else *mouseX += d;
+	if (*mouseY > new_mouseY) *mouseY -= d;
+	else *mouseY +=d;
+	printf("Updated: %d, %d, %d, %d\n", *mouseX, *mouseY, new_mouseX, new_mouseY);
+    }
+}
+
 int main(){
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -48,6 +61,9 @@ int main(){
     
     int mouseX = SCREEN_W / 2;
     int mouseY = SCREEN_H / 2;
+    int new_mouseX = mouseX;
+    int new_mouseY = mouseY;
+    int circle_size = 30;
 
     /* _________________________________________________________________ */
     
@@ -70,15 +86,15 @@ int main(){
 		/* detect mousepress */
 		case SDL_MOUSEBUTTONDOWN:
 
-		    /* onclick -> get mouse positions */
-		    SDL_GetMouseState(&mouseX, &mouseY);
+		    /* onclick -> get new mouse positions */
+		    SDL_GetMouseState(&new_mouseX, &new_mouseY);
 		    break;
 	    }
 	}
-	
-	draw_filled_circle(pRenderer, mouseX, mouseY, 30); 
+	update_centres(&mouseX, &mouseY, new_mouseX, new_mouseY, &circle_size, 10);
+	draw_filled_circle(pRenderer, mouseX, mouseY, circle_size); 
 	SDL_RenderClear(pRenderer);
-	SDL_Delay(40);
+	SDL_Delay(400);
     }
 
     return 0;
