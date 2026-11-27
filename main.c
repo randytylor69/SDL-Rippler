@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define SCREEN_W 640
 #define SCREEN_H 480
@@ -32,15 +33,23 @@ void draw_filled_circle(SDL_Renderer *renderer, int32_t centre_x, int32_t centre
     
 }
 
-void update_centres(int *mouseX, int *mouseY, int new_mouseX, int new_mouseY, int *circle_size, int d){
-    /* d is the distance between each small updates */
-    if (*mouseX != new_mouseX || *mouseY != new_mouseY){
-	if (*mouseX > new_mouseX) *mouseX -= d;
-	else *mouseX += d;
-	if (*mouseY > new_mouseY) *mouseY -= d;
-	else *mouseY +=d;
-	printf("Updated: %d, %d, %d, %d\n", *mouseX, *mouseY, new_mouseX, new_mouseY);
+void update_centres(int *mouseX, int *mouseY, int new_mouseX, int new_mouseY, int *circle_size, int dx, int dy){
+    if (*mouseX != new_mouseX && *mouseY != new_mouseY){
+	if (*mouseX > new_mouseX) *mouseX -= dx;
+	else *mouseX += dx;
+	if (*mouseY > new_mouseY) *mouseY -= dy;
+	else *mouseY += dy;
     }
+}
+
+void update_mouse_position(int mouseX, int mouseY, int *new_mouseX, int *new_mouseY, int *dx, int *dy, int div){
+    /* on every new click on canvas, update the new_mouse
+     * positions, and get the slopes */
+    SDL_GetMouseState(new_mouseX, new_mouseY);
+
+    /* find slope per update */
+    *dx = abs((mouseX - *new_mouseX) / div);
+    *dy = abs((mouseY - *new_mouseY) / div);
 }
 
 int main(){
@@ -65,6 +74,8 @@ int main(){
     int new_mouseY = mouseY;
     int circle_size = 30;
 
+    int dx, dy; // slope for the ball's travelling path
+
     /* _________________________________________________________________ */
     
     while(!quit){
@@ -87,14 +98,24 @@ int main(){
 		case SDL_MOUSEBUTTONDOWN:
 
 		    /* onclick -> get new mouse positions */
-		    SDL_GetMouseState(&new_mouseX, &new_mouseY);
+		    update_mouse_position(mouseX, mouseY, &new_mouseX, &new_mouseY, &dx, &dy, 5);
 		    break;
 	    }
 	}
-	update_centres(&mouseX, &mouseY, new_mouseX, new_mouseY, &circle_size, 10);
+
+	printf("Updated: (%d, %d), (%d, %d), (%d, %d)\n", mouseX, mouseY, new_mouseX, new_mouseY, dx, dy);
+	/* ---- */ 
+	if (abs(new_mouseX - mouseX) >= dx && abs(new_mouseY - mouseY) >= dy){
+	/* only move the ball if the difference between
+	 * its original position and the new position
+	 * is more than the slope slice value. */
+	    update_centres(&mouseX, &mouseY, new_mouseX, new_mouseY, &circle_size, dx, dy);
+	}
 	draw_filled_circle(pRenderer, mouseX, mouseY, circle_size); 
+
 	SDL_RenderClear(pRenderer);
-	SDL_Delay(400);
+	SDL_Delay(20);
+
     }
 
     return 0;
